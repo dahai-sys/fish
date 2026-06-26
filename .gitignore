@@ -18,3 +18,7 @@ public/uploads/
 # 日志与系统文件
 *.log
 .DS_Store
+
+# 测试用 cookie/临时文件（curl -c/-b 产生）
+cj_*
+*.cookie
