@@ -1,0 +1,121 @@
+<%- include('../partials/head', { title: '浏览船只 · 鱼多多' }) %>
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <h3 class="mb-0"><i class="bi bi-water"></i> 可预约船只</h3>
+  <span class="text-muted small">共 <%= boats.length %> 艘</span>
+</div>
+
+<%
+  // 判断是否有任何筛选条件（用于显示"重置"按钮）
+  const f = filters || {};
+  const hasFilter = !!(f.q || f.date_from || f.date_to || f.sea_area || f.port || f.price_min || f.price_max || f.sort);
+%>
+
+<!-- 常驻搜索栏 -->
+<form class="card card-body mb-3" method="GET" action="/boats">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label small text-muted mb-1"><i class="bi bi-search"></i> 关键词</label>
+      <input type="text" class="form-control form-control-sm" name="q" value="<%= f.q || '' %>" placeholder="船名/鱼种/码头/船长">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label small text-muted mb-1">出发日期 从</label>
+      <input type="date" class="form-control form-control-sm" name="date_from" value="<%= f.date_from || '' %>">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label small text-muted mb-1">到</label>
+      <input type="date" class="form-control form-control-sm" name="date_to" value="<%= f.date_to || '' %>">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small text-muted mb-1"><i class="bi bi-geo-alt"></i> 垂钓区域</label>
+      <select class="form-select form-select-sm" name="sea_area">
+        <option value="">全部海区</option>
+        <% SEA_AREAS.forEach(a => { %>
+          <option value="<%= a %>" <%= f.sea_area===a ? 'selected' : '' %>><%= a %></option>
+        <% }) %>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label small text-muted mb-1"><i class="bi bi-anchor"></i> 上船地点</label>
+      <input type="text" class="form-control form-control-sm" name="port" value="<%= f.port || '' %>" placeholder="如 嘉亨灣">
+    </div>
+  </div>
+  <div class="row g-2 align-items-end mt-1">
+    <div class="col-md-2">
+      <label class="form-label small text-muted mb-1">¥ 价格最低</label>
+      <input type="number" class="form-control form-control-sm" name="price_min" value="<%= f.price_min || '' %>" placeholder="0">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label small text-muted mb-1">¥ 价格最高</label>
+      <input type="number" class="form-control form-control-sm" name="price_max" value="<%= f.price_max || '' %>" placeholder="不限">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small text-muted mb-1"><i class="bi bi-sort-down"></i> 排序</label>
+      <select class="form-select form-select-sm" name="sort" onchange="this.form.submit()">
+        <option value="date_asc" <%= (!f.sort||f.sort==='date_asc') ? 'selected' : '' %>>日期最近优先</option>
+        <option value="price_asc" <%= f.sort==='price_asc' ? 'selected' : '' %>>价格从低到高</option>
+        <option value="price_desc" <%= f.sort==='price_desc' ? 'selected' : '' %>>价格从高到低</option>
+        <option value="seats_desc" <%= f.sort==='seats_desc' ? 'selected' : '' %>>剩余座位最多</option>
+      </select>
+    </div>
+    <div class="col-md-3 d-flex align-items-end gap-2">
+      <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-search"></i> 搜索</button>
+      <% if (hasFilter) { %>
+        <a href="/boats" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-counterclockwise"></i> 重置</a>
+      <% } %>
+    </div>
+  </div>
+</form>
+
+<% if (boats.length === 0) { %>
+  <div class="text-center text-muted py-5">
+    <i class="bi bi-inbox display-6 d-block mb-2"></i>
+    没有符合条件的船只，换个筛选条件试试
+    <% if (hasFilter) { %>
+      <div class="mt-2"><a href="/boats" class="btn btn-outline-primary btn-sm">清除所有筛选</a></div>
+    <% } %>
+  </div>
+<% } else { %>
+  <div class="row g-3">
+    <% boats.forEach(b => { %>
+      <div class="col-md-6 col-lg-4">
+        <a href="/boats/<%= b.id %>" class="text-decoration-none text-reset">
+          <div class="card card-trip h-100">
+            <% if (b.cover_image) { %>
+              <img src="/uploads/<%= b.cover_image %>" class="card-img-top" style="height:180px;object-fit:cover;">
+            <% } else { %>
+              <div class="card-img-top d-flex align-items-center justify-content-center bg-light text-muted" style="height:180px;">
+                <i class="bi bi-image display-5"></i>
+              </div>
+            <% } %>
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <h5 class="card-title mb-1">
+                  <span class="text-muted small">#<%= String(b.id).padStart(3,'0') %></span>
+                  <%= b.name %>
+                </h5>
+              </div>
+              <div class="text-muted small mb-2"><%= b.boat_type %> · 船长 <%= b.captain_name %></div>
+
+              <div class="row small g-1">
+                <div class="col-12 mb-1"><i class="bi bi-geo-alt"></i> <%= b.meeting_port || '待定' %></div>
+                <div class="col-12 mb-1">
+                  <i class="bi bi-clock"></i>
+                  <% if (b.next_date) { %>
+                    <%= b.next_date %>
+                    <%= b.next_depart_time || '' %>
+                    <% if (b.next_return_time) { %><span class="text-muted">→ <%= b.next_return_time %></span><% } %>
+                  <% } else { %><span class="text-muted">暂无排期</span><% } %>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer bg-transparent d-flex justify-content-between align-items-center">
+              <span class="text-primary fw-bold">¥<%= b.next_price || '--' %><small class="text-muted">/座</small></span>
+              <span class="badge <%= (b.total_seats>0) ? 'bg-success' : 'bg-secondary' %>">余 <%= b.total_seats || 0 %> 座</span>
+            </div>
+          </div>
+        </a>
+      </div>
+    <% }) %>
+  </div>
+<% } %>
+<%- include('../partials/foot') %>

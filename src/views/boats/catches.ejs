@@ -1,0 +1,59 @@
+<%- include('../partials/head', { title: '渔获相册 · 鱼多多' }) %>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0"><i class="bi bi-camera"></i> 渔获相册 · #<%= String(boat.id).padStart(3,'0') %> <%= boat.name %></h3>
+  <a href="/captain/boats/<%= boat.id %>/edit" class="btn btn-outline-secondary btn-sm">返回编辑</a>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-body">
+        <h6>上传渔获照片</h6>
+        <form method="POST" action="/captain/boats/<%= boat.id %>/catches" enctype="multipart/form-data">
+          <div class="mb-2">
+            <label class="form-label small">照片（可多选）</label>
+            <input type="file" class="form-control form-control-sm" name="photos" accept="image/*" multiple required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small">当日鱼种</label>
+            <input class="form-control form-control-sm" name="fish_species" placeholder="如 鲈鱼、真鲷">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small">拍摄日期</label>
+            <input type="date" class="form-control form-control-sm" name="shot_date">
+          </div>
+          <button class="btn btn-success btn-sm w-100"><i class="bi bi-upload"></i> 上传</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-body">
+        <h6>已有渔获（<%= catches.length %>）</h6>
+        <% if (catches.length === 0) { %>
+          <div class="text-muted py-3">暂无渔获照片</div>
+        <% } else { %>
+          <div class="row g-2">
+            <% catches.forEach(c => { %>
+              <div class="col-6 col-md-4">
+                <img src="/uploads/<%= c.photo %>" class="img-fluid rounded" style="height:130px;object-fit:cover;width:100%;">
+                <div class="d-flex justify-content-between align-items-center mt-1">
+                  <div class="small">
+                    <% if (c.fish_species) { %><span class="text-primary"><%= c.fish_species %></span><% } %>
+                    <% if (c.shot_date) { %><span class="text-muted"><%= c.shot_date %></span><% } %>
+                  </div>
+                  <form method="POST" action="/captain/catches/<%= c.id %>/del" onsubmit="return confirm('删除该照片？')">
+                    <button class="btn btn-outline-danger btn-sm py-0 px-1">×</button>
+                  </form>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include('../partials/foot') %>

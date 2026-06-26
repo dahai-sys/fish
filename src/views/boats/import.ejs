@@ -1,0 +1,42 @@
+<%- include('../partials/head', { title: '批量录入 · 鱼多多' }) %>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0"><i class="bi bi-clipboard-plus"></i> 批量录入</h3>
+  <a href="/captain/boats" class="btn btn-outline-secondary btn-sm">返回</a>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-body">
+        <h6>粘贴船钓公告</h6>
+        <p class="text-muted small">把群里看到的船期公告整段复制粘贴到下方，系统会自动识别船名、日期、价格、上船点、设施、联系方式等，解析后你可以逐项确认或修改再入库。</p>
+        <form method="POST" action="/captain/import/parse">
+          <div class="mb-3">
+            <textarea class="form-control" name="announcement" rows="14" required
+              placeholder="例如：&#10;溢豐2號船最新船期公告&#10;6月25(四)欠2位成團&#10;6月26(五)成團&#10;...&#10;費用: $550&#10;12:00pm 嘉亨灣&#10;12:10pm 三家村&#10;WhatsApp: https://wa.me/852xxxxxxxx"></textarea>
+          </div>
+          <button class="btn btn-primary"><i class="bi bi-magic"></i> 解析公告</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-body">
+        <h6 class="text-muted">使用说明</h6>
+        <ul class="small text-muted mb-0">
+          <li>支持香港船钓圈常见公告格式</li>
+          <li>解析后进入<strong>预览页</strong>，可逐项修改</li>
+          <li>可选择<strong>新建船只</strong>或<strong>追加到已有船</strong></li>
+          <li>识别字段：船名、船期日期、价格、费用包含、上船点+时间、设施、WhatsApp/微信</li>
+          <li>解析不保证100%准确，<strong>请务必核对后再入库</strong></li>
+        </ul>
+        <hr>
+        <div class="small text-muted">
+          <strong>合规提示</strong>：仅录入您在群内正常浏览到的公开经营信息；涉及个人手机号等隐私，建议先取得船长同意。
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include('../partials/foot') %>

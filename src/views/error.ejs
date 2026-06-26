@@ -1,0 +1,9 @@
+<%- include('partials/head', { title: '出错了' }) %>
+<div class="row justify-content-center">
+  <div class="col-md-6 text-center">
+    <div class="display-1 text-muted"><%= typeof code !== 'undefined' ? code : '⚠' %></div>
+    <h4 class="mt-2"><%= message %></h4>
+    <a href="/" class="btn btn-outline-primary mt-3">返回首页</a>
+  </div>
+</div>
+<%- include('partials/foot') %>

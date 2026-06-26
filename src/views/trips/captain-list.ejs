@@ -1,0 +1,66 @@
+<%- include('../partials/head', { title: '我的船期 · 鱼多多' }) %>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0"><i class="bi bi-calendar-week"></i> 我的船期</h3>
+  <a href="/captain/trips/new" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> 发布船期</a>
+</div>
+
+<% if (trips.length === 0) { %>
+  <div class="text-center text-muted py-5">
+    <i class="bi bi-calendar-x display-6 d-block mb-2"></i>
+    还没有发布过船期
+  </div>
+<% } else { %>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>出发日期</th>
+          <th>船只</th>
+          <th>上船/回岸</th>
+          <th class="text-center">余座/载客</th>
+          <th class="text-center">预约</th>
+          <th class="text-center">状态</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% trips.forEach(t => { %>
+          <tr>
+            <td><%= t.depart_date %></td>
+            <td><a href="/boats/<%= t.boat_id || '' %>"><%= t.boat_name %></a></td>
+            <td><small class="text-muted">上 <%= t.depart_time || '—' %> · 回 <%= t.return_time || '—' %></small></td>
+            <td class="text-center"><%= t.available_seats %>/<%= t.boat_seats %></td>
+            <td class="text-center">
+              <% if (t.booking_count > 0) { %>
+                <a href="/captain/bookings" class="badge text-bg-warning"><%= t.booking_count %></a>
+              <% } else { %><span class="text-muted">0</span><% } %>
+            </td>
+            <td class="text-center">
+              <% const cls = { recruiting:'warning', confirmed:'success', full:'secondary', closed:'light text-dark' }[t.status]; %>
+              <span class="badge text-bg-<%= cls %>"><%= {recruiting:'招募中',confirmed:'已成团',full:'已满',closed:'已关闭'}[t.status] %></span>
+            </td>
+            <td class="text-nowrap">
+              <% if (t.status === 'recruiting') { %>
+                <form method="POST" action="/captain/trips/<%= t.id %>/confirm" class="d-inline">
+                  <button class="btn btn-outline-success btn-sm py-0">成团</button>
+                </form>
+                <form method="POST" action="/captain/trips/<%= t.id %>/close" class="d-inline" onsubmit="return confirm('关闭该船期？')">
+                  <button class="btn btn-outline-secondary btn-sm py-0">关闭</button>
+                </form>
+              <% } else if (t.status === 'confirmed') { %>
+                <form method="POST" action="/captain/trips/<%= t.id %>/close" class="d-inline" onsubmit="return confirm('关闭该船期？')">
+                  <button class="btn btn-outline-secondary btn-sm py-0">关闭</button>
+                </form>
+              <% } else if (t.status === 'closed') { %>
+                <form method="POST" action="/captain/trips/<%= t.id %>/reopen" class="d-inline">
+                  <button class="btn btn-outline-primary btn-sm py-0">重开</button>
+                </form>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+<%- include('../partials/foot') %>

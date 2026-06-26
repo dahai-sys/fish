@@ -1,0 +1,58 @@
+<nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(90deg,#0d6efd,#0a58ca);">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <i class="bi bi-tsunami"></i> 鱼多多 <span class="small opacity-75">Fish Full</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="nav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" href="/boats">浏览船只</a></li>
+
+        <% if (currentUser && currentUser.role === 'angler') { %>
+          <li class="nav-item"><a class="nav-link" href="/bookings/mine">我的预约</a></li>
+        <% } %>
+
+        <% if (currentUser && currentUser.role === 'captain') { %>
+          <li class="nav-item"><a class="nav-link" href="/captain/boats">我的船只</a></li>
+          <li class="nav-item"><a class="nav-link" href="/captain/trips">我的船期</a></li>
+          <li class="nav-item"><a class="nav-link" href="/captain/bookings">预约管理</a></li>
+          <li class="nav-item"><a class="nav-link" href="/captain/import"><i class="bi bi-clipboard-plus"></i> 批量录入</a></li>
+        <% } %>
+      </ul>
+
+      <ul class="navbar-nav align-items-lg-center">
+        <% if (currentUser) { %>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#">
+              <i class="bi bi-person-circle"></i>
+              <%= currentUser.name %>
+              <span class="badge bg-light text-dark ms-1"><%= currentUser.role === 'captain' ? '船长' : '钓鱼人' %></span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li class="dropdown-item-text small text-muted">账号：<%= currentUser.username %></li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <form method="POST" action="/logout" class="px-2">
+                  <button type="submit" class="btn btn-outline-danger btn-sm w-100">退出登录</button>
+                </form>
+              </li>
+            </ul>
+          </li>
+        <% } else { %>
+          <!-- 我是船长 / 我是钓鱼人 入口（带预设角色跳注册）-->
+          <li class="nav-item me-lg-2">
+            <a href="/register?role=captain" class="btn btn-sm btn-outline-warning">🚢 我是船长</a>
+          </li>
+          <li class="nav-item me-lg-2">
+            <a href="/register?role=angler" class="btn btn-sm btn-outline-light">🎣 我是钓鱼人</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/login">登录</a>
+          </li>
+        <% } %>
+      </ul>
+    </div>
+  </div>
+</nav>

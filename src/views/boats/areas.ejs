@@ -1,0 +1,89 @@
+<%- include('../partials/head', { title: '钓区管理 · 鱼多多' }) %>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0"><i class="bi bi-geo-alt"></i> 钓区管理 · #<%= String(boat.id).padStart(3,'0') %> <%= boat.name %></h3>
+  <a href="/captain/boats/<%= boat.id %>/edit" class="btn btn-outline-secondary btn-sm">返回编辑</a>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-body">
+        <h6>新增钓区</h6>
+        <form method="POST" action="/captain/boats/<%= boat.id %>/areas">
+          <div class="mb-2">
+            <label class="form-label">钓区名称 *</label>
+            <input class="form-control" name="name" required placeholder="如 洋鞍大礁">
+          </div>
+          <div class="row g-2">
+            <div class="col-6">
+              <label class="form-label">经度 *</label>
+              <input type="number" step="0.0001" class="form-control" name="longitude" id="f-lng" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label">纬度 *</label>
+              <input type="number" step="0.0001" class="form-control" name="latitude" id="f-lat" required>
+            </div>
+          </div>
+          <div class="mb-2 mt-2">
+            <label class="form-label">所属海区</label>
+            <select class="form-select" name="sea_area">
+              <option value="">请选择</option>
+              <% SEA_AREAS.forEach(a => { %><option value="<%= a %>"><%= a %></option><% }) %>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">钓区介绍</label>
+            <textarea class="form-control" name="description" rows="2"></textarea>
+          </div>
+          <button class="btn btn-primary w-100">添加钓区</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-body">
+        <h6>已有钓区（<%= areas.length %>）<span class="text-muted small">· 点击地图拾取坐标</span></h6>
+        <% if (amapKey) { %>
+          <div id="pickMap" class="map-box mb-3"></div>
+        <% } %>
+        <% if (areas.length === 0) { %>
+          <div class="text-muted">暂无钓区</div>
+        <% } else { %>
+          <div class="list-group">
+            <% areas.forEach(a => { %>
+              <div class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <strong><%= a.name %></strong>
+                  <div class="small text-muted"><%= a.sea_area || '' %> · <%= a.longitude %>, <%= a.latitude %></div>
+                  <% if (a.description) { %><div class="small"><%= a.description %></div><% } %>
+                </div>
+                <form method="POST" action="/captain/areas/<%= a.id %>/del" onsubmit="return confirm('删除该钓区？')">
+                  <button class="btn btn-outline-danger btn-sm">删除</button>
+                </form>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% if (amapKey) { %>
+  <% var scripts = `
+  <script src="https://webapi.amap.com/maps?v=2.0&key=${amapKey}"></script>
+  <script>
+    (function(){
+      if (typeof AMap === 'undefined') return;
+      var lngEl = document.getElementById('f-lng'), latEl = document.getElementById('f-lat');
+      var map = new AMap.Map('pickMap', { zoom: 6, center: [121.5, 29.0] });
+      map.on('click', function(e){
+        lngEl.value = e.lnglat.getLng().toFixed(6);
+        latEl.value = e.lnglat.getLat().toFixed(6);
+      });
+    })();
+  </script>`; %>
+<% } %>
+<%- include('../partials/foot') %>

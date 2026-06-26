@@ -1,0 +1,52 @@
+<%- include('../partials/head', { title: '我的船只 · 鱼多多' }) %>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0"><i class="bi bi-water"></i> 我的船只</h3>
+  <a href="/captain/boats/new" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> 添加船只</a>
+</div>
+
+<% if (boats.length === 0) { %>
+  <div class="text-center text-muted py-5">
+    <i class="bi bi-water display-6 d-block mb-2"></i>
+    还没有添加船只，先添加一艘吧
+  </div>
+<% } else { %>
+  <div class="row g-3">
+    <% boats.forEach(b => { %>
+      <div class="col-md-6">
+        <div class="card h-100">
+          <div class="row g-0">
+            <div class="col-4">
+              <% if (b.cover_image) { %>
+                <img src="/uploads/<%= b.cover_image %>" class="img-fluid rounded-start h-100 w-100" style="object-fit:cover;min-height:140px;">
+              <% } else { %>
+                <div class="d-flex align-items-center justify-content-center bg-light text-muted h-100" style="min-height:140px;"><i class="bi bi-image display-5"></i></div>
+              <% } %>
+            </div>
+            <div class="col-8">
+              <div class="card-body">
+                <h6 class="card-title mb-1">
+                  <span class="text-muted small">#<%= String(b.id).padStart(3,'0') %></span>
+                  <%= b.name %>
+                  <span class="badge text-bg-light"><%= b.boat_type %></span>
+                </h6>
+                <div class="small text-muted mb-2"><%= b.meeting_port || '未设码头' %></div>
+                <div class="small d-flex gap-3 mb-2">
+                  <span><i class="bi bi-rulers"></i> <%= b.length_m || '?' %>m</span>
+                  <span><i class="bi bi-people"></i> <%= b.seats %>座</span>
+                  <span><i class="bi bi-calendar"></i> <%= b.trip_count %>期</span>
+                </div>
+                <div class="btn-group btn-group-sm w-100">
+                  <a href="/captain/boats/<%= b.id %>/edit" class="btn btn-outline-primary">编辑</a>
+                  <a href="/captain/boats/<%= b.id %>/areas" class="btn btn-outline-primary"><i class="bi bi-geo-alt"></i> <%= b.area_count %></a>
+                  <a href="/captain/boats/<%= b.id %>/catches" class="btn btn-outline-primary"><i class="bi bi-camera"></i> <%= b.catch_count %></a>
+                  <a href="/boats/<%= b.id %>" class="btn btn-outline-secondary"><i class="bi bi-eye"></i></a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+<% } %>
+<%- include('../partials/foot') %>

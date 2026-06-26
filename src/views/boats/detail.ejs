@@ -1,0 +1,374 @@
+<%- include('../partials/head', { title: boat.name + ' · 鱼多多' }) %>
+<a href="/boats" class="btn btn-link btn-sm ps-0 mb-2"><i class="bi bi-arrow-left"></i> 返回列表</a>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h3 class="mb-0">
+      <span class="text-muted small">#<%= String(boat.id).padStart(3,'0') %></span>
+      <%= boat.name %>
+      <span class="badge text-bg-<%= boat.boat_type==='出海艇'?'primary':'info' %>"><%= boat.boat_type %></span>
+    </h3>
+    <div class="text-muted small">船长 <%= boat.captain_name %></div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- 左主栏 -->
+  <div class="col-lg-8">
+
+    <!-- 1. 船只基础档案 -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-info-circle"></i> 船只档案</h5>
+        <div class="row small mb-3">
+          <div class="col-6 col-md-3 mb-2"><i class="bi bi-rulers text-primary"></i> 船体：<strong><%= boat.length_m %> 米</strong></div>
+          <div class="col-6 col-md-3 mb-2"><i class="bi bi-people text-primary"></i> 总座位：<strong><%= boat.seats %> 座</strong></div>
+          <div class="col-6 col-md-3 mb-2"><i class="bi bi-fish text-primary"></i> 主钓鱼种：<strong><%= boat.target_fish || '混合' %></strong></div>
+          <div class="col-6 col-md-3 mb-2"><i class="bi bi-award text-primary"></i> 船长：<strong><%= boat.captain_name %></strong></div>
+          <% if (boat.captain_experience) { %>
+            <div class="col-12 mb-2"><i class="bi bi-mortarboard text-primary"></i> 船长经验：<%= boat.captain_experience %></div>
+          <% } %>
+        </div>
+
+        <!-- 上船地点（支持多个，每个带时间和地图链接）-->
+        <% if (boardingPoints && boardingPoints.length > 0) { %>
+        <div class="mb-3">
+          <strong class="d-block mb-2"><i class="bi bi-geo-alt-fill text-primary"></i> 上船地点</strong>
+          <div class="row g-2">
+            <% boardingPoints.forEach(bp => { %>
+              <div class="col-md-6">
+                <div class="border rounded p-2 h-100">
+                  <div><strong><%= bp.name %></strong></div>
+                  <% if (bp.depart_time) { %><div class="small text-muted"><i class="bi bi-clock"></i> <%= bp.depart_time %> 出发</div><% } %>
+                  <% if (bp.map_link) { %><a href="<%= bp.map_link %>" target="_blank" class="small"><i class="bi bi-map"></i> 查看地图</a><% } %>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+        <% } else if (boat.meeting_port) { %>
+          <div class="mb-3"><strong><i class="bi bi-geo-alt-fill text-primary"></i> 上船地点：</strong><%= boat.meeting_port %></div>
+        <% } %>
+
+        <!-- 费用明细 -->
+        <% if (boat.price_per_seat || boat.price_includes || boat.charter_min_people) { %>
+        <div class="mb-3">
+          <strong class="d-block mb-2"><i class="bi bi-cash-coin text-primary"></i> 费用说明</strong>
+          <div class="row small">
+            <% if (boat.price_per_seat) { %><div class="col-md-6 mb-1">散客：<strong class="text-danger">¥<%= boat.price_per_seat %></strong>/位</div><% } %>
+            <% if (boat.charter_min_people) { %><div class="col-md-6 mb-1">包团：最低 <strong><%= boat.charter_min_people %></strong> 人起</div><% } %>
+          </div>
+          <% if (boat.price_includes) { %>
+            <div class="small text-muted mt-1"><i class="bi bi-check-circle text-success"></i> 费用包含：<%= boat.price_includes %></div>
+          <% } %>
+          <% if (boat.charter_note) { %>
+            <div class="small text-muted mt-1"><i class="bi bi-info-circle"></i> 包团说明：<%= boat.charter_note %></div>
+          <% } %>
+        </div>
+        <% } %>
+
+        <!-- 船上设施 -->
+        <% if (boat.facilities) { %>
+        <div class="mb-0">
+          <strong class="d-block mb-2"><i class="bi bi-tools text-primary"></i> 船上设施</strong>
+          <div>
+            <% boat.facilities.split(/[,，]/).filter(f=>f.trim()).forEach(f => { %>
+              <span class="badge text-bg-light me-1 mb-1"><%= f.trim() %></span>
+            <% }) %>
+          </div>
+        </div>
+        <% } %>
+
+        <% if (boat.description) { %><hr class="my-2"><p class="text-muted mb-0 small"><%= boat.description %></p><% } %>
+      </div>
+    </div>
+
+    <!-- 图集 -->
+    <% if (images.length > 0) { %>
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title"><i class="bi bi-images"></i> 船只实拍</h5>
+          <div class="row g-2">
+            <% images.forEach(img => { %>
+              <div class="col-6 col-md-4">
+                <img src="/uploads/<%= img.filename %>" class="img-fluid rounded w-100" style="height:140px;object-fit:cover;">
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+    <% } %>
+
+    <!-- 2. 行程预约信息 -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-calendar-check"></i> 可预约船期</h5>
+        <% if (trips.length === 0) { %>
+          <div class="text-muted">暂无可出船日期</div>
+        <% } else { %>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead class="table-light">
+                <tr><th>日期</th><th>时间</th><th class="text-center">状态</th><th class="text-center">余座</th><th class="text-end">价格</th><% if (currentUser && currentUser.role==='angler') { %><th></th><% } %></tr>
+              </thead>
+              <tbody>
+                <% trips.forEach(t => {
+                   const statusMap = { recruiting:['招募中','warning'], confirmed:['已成团','success'], full:['已满','secondary'], closed:['已关闭','light text-dark'] };
+                   const [sLabel, sCls] = statusMap[t.status] || ['','light'];
+                %>
+                  <tr>
+                    <td><%= t.depart_date %><% if (t.note) { %><br><small class="text-muted"><%= t.note %></small><% } %></td>
+                    <td><small><%= t.depart_time || '—' %> - <%= t.return_time || '—' %></small></td>
+                    <td class="text-center"><span class="badge text-bg-<%= sCls %>"><%= sLabel %></span></td>
+                    <td class="text-center"><span class="badge <%= t.available_seats>0?'bg-success':'bg-secondary' %>"><%= t.available_seats %></span></td>
+                    <td class="text-end">¥<%= t.price_per_seat %></td>
+                    <% if (currentUser && currentUser.role==='angler') { %>
+                      <td class="text-end">
+                        <% if (myBookingTripIds.includes(t.id)) { %>
+                          <span class="badge text-bg-info">已预约</span>
+                        <% } else if (t.available_seats > 0) { %>
+                          <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#bookModal"
+                                  data-trip="<%= t.id %>" data-date="<%= t.depart_date %>" data-price="<%= t.price_per_seat %>"
+                                  data-max="<%= t.available_seats %>">预约</button>
+                        <% } else { %>
+                          <span class="text-muted small">已满</span>
+                        <% } %>
+                      </td>
+                    <% } %>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+          <% if (!currentUser) { %>
+            <div class="text-center mt-2"><a href="/login" class="btn btn-outline-primary btn-sm">登录后预约</a></div>
+          <% } %>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- 3. 钓区可视化地图 + 气象 -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-map"></i> 垂钓区域 · 实时海况</h5>
+        <% if (areas.length === 0) { %>
+          <div class="text-muted">暂未设置钓区</div>
+        <% } else { %>
+          <% if (amapKey) { %>
+            <div id="areasMap" class="map-box mb-3"
+                 data-areas='<%- JSON.stringify(areas.map(a => ({
+                   id: a.id, name: a.name, lng: a.longitude, lat: a.latitude,
+                   sea: a.sea_area, desc: a.description,
+                   w: weatherMap[a.id]
+                 }))) %>'></div>
+          <% } else { %>
+            <div class="map-box bg-light d-flex align-items-center justify-content-center text-muted mb-3">
+              <div class="text-center">
+                <i class="bi bi-map display-6 d-block"></i>
+                未配置高德地图 Key，下方以列表展示钓区与气象
+              </div>
+            </div>
+          <% } %>
+          <div class="row g-2">
+            <% areas.forEach(a => { const w = weatherMap[a.id]; %>
+              <div class="col-md-6">
+                <div class="border rounded p-2 h-100">
+                  <strong><i class="bi bi-geo-alt-fill text-primary"></i> <%= a.name %></strong>
+                  <div class="text-muted small"><%= a.sea_area || '' %> · <%= a.longitude.toFixed(3) %>, <%= a.latitude.toFixed(3) %></div>
+                  <% if (w && w.ok) { %>
+                    <div class="small mt-1">
+                      <% if (w.weather) { %><span class="badge text-bg-light"><%= w.weather %></span><% } %>
+                      <% if (w.windLevel != null) { %><span class="badge text-bg-info">风<%= w.windLevel %>级 <%= (w.windSpeed!=null?w.windSpeed.toFixed(1)+'m/s':'') %></span><% } %>
+                      <% if (w.waveHeight != null) { %><span class="badge text-bg-primary">浪 <%= w.waveHeight.toFixed(1) %>m</span><% } %>
+                      <% if (w.precipitation != null) { %><span class="badge text-bg-<%= w.precipitation>0?'success':'light text-dark' %>">降水 <%= w.precipitation %>mm</span><% } %>
+                      <% if (w.seaTemp != null) { %><span class="badge text-bg-warning text-dark">水温 <%= w.seaTemp.toFixed(1) %>°C</span><% } %>
+                    </div>
+                  <% } else { %>
+                    <div class="small text-muted mt-1"><i class="bi bi-cloud-slash"></i> 该钓区气象暂不可用</div>
+                  <% } %>
+                  <% if (a.description) { %><div class="small text-muted mt-1"><%= a.description %></div><% } %>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- 4. 近期渔获相册 -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-camera"></i> 近期渔获</h5>
+        <% if (catches.length === 0) { %>
+          <div class="text-muted">暂无渔获记录</div>
+        <% } else { %>
+          <div class="row g-2">
+            <% catches.forEach(c => { %>
+              <div class="col-6 col-md-4 col-lg-3">
+                <div class="position-relative">
+                  <img src="/uploads/<%= c.photo %>" class="img-fluid rounded w-100" style="height:130px;object-fit:cover;">
+                </div>
+                <div class="small mt-1">
+                  <% if (c.fish_species) { %><span class="text-primary"><%= c.fish_species %></span><% } %>
+                  <% if (c.shot_date) { %><span class="text-muted">· <%= c.shot_date %></span><% } %>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- 5. 联系与报名 -->
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-chat-dots"></i> 联系船长 / 报名</h5>
+        <div class="d-flex flex-wrap gap-2">
+          <% if (boat.whatsapp_link) { %>
+            <a href="<%= boat.whatsapp_link %>" target="_blank" class="btn btn-success">
+              <i class="bi bi-whatsapp"></i> WhatsApp 报名
+            </a>
+          <% } %>
+          <% if (boat.contact_phone) { %>
+            <a href="tel:<%= boat.contact_phone %>" class="btn btn-outline-primary">
+              <i class="bi bi-telephone"></i> <%= boat.contact_phone %>
+            </a>
+          <% } %>
+          <% if (boat.wechat) { %>
+            <span class="btn btn-outline-secondary" title="点击复制微信号" style="cursor:pointer"
+                  onclick="navigator.clipboard.writeText('<%= boat.wechat %>').then(()=>alert('微信号已复制：'+<%= JSON.stringify(boat.wechat) %>))">
+              <i class="bi bi-wechat"></i> 微信 <%= boat.wechat %>
+            </span>
+          <% } %>
+          <% if (!boat.whatsapp_link && !boat.contact_phone && !boat.wechat) { %>
+            <span class="text-muted">暂未提供联系方式</span>
+          <% } %>
+        </div>
+        <% if (currentUser && currentUser.role==='angler') { %>
+          <hr>
+          <div class="small text-muted">
+            <i class="bi bi-info-circle"></i> 也可在上方船期表点击「预约」在线提交，等待船长确认。
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右侧：预约状态卡 -->
+  <div class="col-lg-4">
+    <div class="card sticky-top" style="top:80px;">
+      <div class="card-body text-center">
+        <div class="text-muted small">船只 ID</div>
+        <div class="stat-num">#<%= String(boat.id).padStart(3,'0') %></div>
+        <hr>
+        <div class="row text-center">
+          <div class="col-6"><div class="text-muted small">总座位</div><div class="fw-bold"><%= boat.seats %></div></div>
+          <div class="col-6"><div class="text-muted small">近期船期</div><div class="fw-bold"><%= trips.length %></div></div>
+        </div>
+        <% if (currentUser && currentUser.role==='angler' && trips.length>0) { %>
+          <hr>
+          <div class="small text-muted">点击左侧船期「预约」按钮提交申请，等待船长确认</div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 预约弹窗 -->
+<% if (currentUser && currentUser.role==='angler') { %>
+<div class="modal fade" id="bookModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" id="bookForm" action="">
+        <div class="modal-header"><h5 class="modal-title">预约船期</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+          <div class="mb-2"><strong>日期：</strong><span id="bm-date"></span></div>
+          <div class="mb-2"><strong>单价：</strong>¥<span id="bm-price"></span>/座</div>
+          <div class="mb-3">
+            <label class="form-label">座位数</label>
+            <input type="number" class="form-control" name="seats_booked" id="bm-seats" min="1" value="1" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">联系电话</label>
+            <input class="form-control" name="contact_phone" value="<%= currentUser.phone || '' %>">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">留言</label>
+            <input class="form-control" name="remark" placeholder="特殊需求">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="submit" class="btn btn-primary">提交预约</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<% } %>
+
+<% if (amapKey && areas.length > 0) { %>
+  <% var scripts = `
+  <script src="https://webapi.amap.com/maps?v=2.0&key=${amapKey}"></script>
+  <script>
+    (function(){
+      var el = document.getElementById('areasMap');
+      if (!el || typeof AMap === 'undefined') return;
+      var areas = JSON.parse(el.dataset.areas);
+      var map = new AMap.Map(el, { zoom: 6, center: [areas[0].lng, areas[0].lat], viewMode: '2D' });
+      var bounds = new AMap.Bounds();
+      areas.forEach(function(a){
+        var w = a.w || {};
+        var html = '<div style="min-width:180px;padding:4px;">'
+          + '<strong>' + a.name + '</strong>'
+          + '<div style="color:#888;font-size:12px;">' + (a.sea||'') + '</div>';
+        if (w.ok) {
+          html += '<div style="margin-top:6px;font-size:12px;line-height:1.6;">';
+          if (w.weather) html += '🌤 ' + w.weather + '<br>';
+          if (w.windLevel!=null) html += '💨 风力 ' + w.windLevel + ' 级' + (w.windSpeed!=null?(' ('+w.windSpeed.toFixed(1)+'m/s)'):'') + '<br>';
+          if (w.waveHeight!=null) html += '🌊 浪高 ' + w.waveHeight.toFixed(1) + ' m<br>';
+          if (w.precipitation!=null) html += '🌧 降水 ' + w.precipitation + ' mm<br>';
+          if (w.seaTemp!=null) html += '🌡 水温 ' + w.seaTemp.toFixed(1) + '°C';
+          html += '</div>';
+        } else {
+          html += '<div style="margin-top:6px;font-size:12px;color:#999;">气象暂不可用</div>';
+        }
+        html += '</div>';
+        var marker = new AMap.Marker({ position: [a.lng, a.lat], map: map, title: a.name });
+        var info = new AMap.InfoWindow({ content: html, offset: new AMap.Pixel(0, -30) });
+        marker.on('click', function(){ info.open(map, [a.lng, a.lat]); });
+        map.setFitView();
+      });
+    })();
+    // 预约弹窗填充
+    var bm = document.getElementById('bookModal');
+    if (bm) {
+      bm.addEventListener('show.bs.modal', function(e){
+        var btn = e.relatedTarget;
+        var f = document.getElementById('bookForm');
+        f.action = '/trips/' + btn.dataset.trip + '/book';
+        document.getElementById('bm-date').textContent = btn.dataset.date;
+        document.getElementById('bm-price').textContent = btn.dataset.price;
+        var seats = document.getElementById('bm-seats');
+        seats.max = btn.dataset.max; seats.value = 1;
+      });
+    }
+  </script>`; %>
+<% } else { %>
+  <% var scripts = `
+  <script>
+    var bm = document.getElementById('bookModal');
+    if (bm) {
+      bm.addEventListener('show.bs.modal', function(e){
+        var btn = e.relatedTarget;
+        var f = document.getElementById('bookForm');
+        f.action = '/trips/' + btn.dataset.trip + '/book';
+        document.getElementById('bm-date').textContent = btn.dataset.date;
+        document.getElementById('bm-price').textContent = btn.dataset.price;
+        var seats = document.getElementById('bm-seats');
+        seats.max = btn.dataset.max; seats.value = 1;
+      });
+    }
+  </script>`; %>
+<% } %>
+<%- include('../partials/foot') %>

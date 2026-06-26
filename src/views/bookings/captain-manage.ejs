@@ -1,0 +1,60 @@
+<%- include('../partials/head', { title: '预约管理' }) %>
+<h3 class="mb-3"><i class="bi bi-clipboard-check"></i> 预约管理</h3>
+
+<% if (bookings.length === 0) { %>
+  <div class="text-center text-muted py-5">
+    <i class="bi bi-inbox display-6 d-block mb-2"></i>
+    暂无待处理的预约
+  </div>
+<% } else { %>
+  <div class="row g-3">
+    <% bookings.forEach(b => { %>
+      <div class="col-md-6">
+        <div class="card h-100 <%= b.status==='pending' ? 'border-warning' : 'border-success' %>">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <h6 class="mb-1">
+                <a href="/boats/<%= b.boat_id %>" class="text-reset"><%= b.boat_name %></a>
+              </h6>
+              <span class="badge text-bg-<%= b.status==='pending' ? 'warning' : 'success' %>">
+                <%= b.status==='pending' ? '待确认' : '已确认' %>
+              </span>
+            </div>
+            <div class="text-muted small mb-2">
+              <%= b.depart_date %> <%= b.depart_time || '' %> · <%= b.meeting_port || '' %>
+            </div>
+            <div class="row small">
+              <div class="col-6"><i class="bi bi-person"></i> <%= b.angler_name %></div>
+              <div class="col-6"><i class="bi bi-telephone"></i> <%= b.angler_phone || b.contact_phone || '—' %></div>
+              <div class="col-6"><i class="bi bi-people"></i> 预约 <strong><%= b.seats_booked %></strong> 座</div>
+              <div class="col-6"><i class="bi bi-clock"></i> <%= b.created_at %></div>
+            </div>
+            <% if (b.remark) { %>
+              <p class="small bg-light rounded p-2 mt-2 mb-0"><i class="bi bi-chat"></i> <%= b.remark %></p>
+            <% } %>
+          </div>
+          <div class="card-footer bg-transparent">
+            <% if (b.status === 'pending') { %>
+              <form method="POST" action="/captain/bookings/<%= b.id %>/confirm" class="d-inline">
+                <button class="btn btn-sm btn-success"><i class="bi bi-check-lg"></i> 确认</button>
+              </form>
+              <form method="POST" action="/captain/bookings/<%= b.id %>/reject" class="d-inline"
+                    onsubmit="return confirm('确定拒绝该预约？')">
+                <button class="btn btn-sm btn-outline-danger">拒绝</button>
+              </form>
+            <% } else if (b.status === 'confirmed') { %>
+              <form method="POST" action="/captain/bookings/<%= b.id %>/complete" class="d-inline">
+                <button class="btn btn-sm btn-primary"><i class="bi bi-flag"></i> 标记完成</button>
+              </form>
+              <form method="POST" action="/captain/bookings/<%= b.id %>/reject" class="d-inline"
+                    onsubmit="return confirm('撤销确认将归还座位，确定？')">
+                <button class="btn btn-sm btn-outline-warning">撤销确认</button>
+              </form>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+<% } %>
+<%- include('../partials/foot') %>

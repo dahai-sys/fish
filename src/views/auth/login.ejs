@@ -1,0 +1,33 @@
+<%- include('../partials/head', { title: '登录' }) %>
+<div class="row justify-content-center">
+  <div class="col-md-5 col-lg-4">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h4 class="mb-3 text-center"><i class="bi bi-box-arrow-in-right"></i> 登录</h4>
+        <% if (typeof error !== 'undefined') { %>
+          <div class="alert alert-danger py-2"><%= error %></div>
+        <% } %>
+        <form method="POST" action="/login">
+          <div class="mb-3">
+            <label class="form-label">用户名</label>
+            <input class="form-control" name="username" value="<%= (values && values.username) || '' %>" required autofocus>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">密码</label>
+            <input type="password" class="form-control" name="password" required>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">登录</button>
+        </form>
+        <div class="text-center mt-3 small">
+          没有账号？<a href="/register">去注册</a>
+        </div>
+        <hr>
+        <div class="small text-muted">
+          <strong>演示账号</strong>（密码均为 123456）<br>
+          船长：<code>captain1</code> · 钓鱼人：<code>angler1</code>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include('../partials/foot') %>

@@ -1,0 +1,170 @@
+<%- include('../partials/head', { title: '编辑船只 · 鱼多多' }) %>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0"><i class="bi bi-pencil-square"></i> 编辑船只 · #<%= String(boat.id).padStart(3,'0') %> <%= boat.name %></h3>
+  <div class="btn-group">
+    <a href="/captain/boats/<%= boat.id %>/areas" class="btn btn-outline-primary btn-sm"><i class="bi bi-geo-alt"></i> 钓区</a>
+    <a href="/captain/boats/<%= boat.id %>/catches" class="btn btn-outline-primary btn-sm"><i class="bi bi-camera"></i> 渔获</a>
+    <a href="/boats/<%= boat.id %>" class="btn btn-outline-secondary btn-sm"><i class="bi bi-eye"></i> 预览</a>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- 左：表单 -->
+  <div class="col-lg-7">
+    <div class="card mb-3">
+      <div class="card-body">
+        <form method="POST" action="/captain/boats/<%= boat.id %>">
+          <h6 class="text-muted border-bottom pb-2">基本信息</h6>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label">船名 *</label>
+              <input class="form-control" name="name" value="<%= boat.name %>" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">类型 *</label>
+              <select class="form-select" name="boat_type" required>
+                <% ['出海艇','近海艇','筏钓艇','休闲渔船','专业钓艇','其他'].forEach(t => { %>
+                  <option value="<%= t %>" <%= boat.boat_type===t ? 'selected' : '' %>><%= t %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">座位数 *</label>
+              <input type="number" class="form-control" name="seats" value="<%= boat.seats %>" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">船体长度（米）</label>
+              <input type="number" step="0.1" class="form-control" name="length_m" value="<%= boat.length_m || '' %>">
+            </div>
+            <div class="col-md-8">
+              <label class="form-label">主打鱼种</label>
+              <input class="form-control" name="target_fish" value="<%= boat.target_fish || '' %>">
+            </div>
+            <div class="col-md-12">
+              <label class="form-label">船长经验</label>
+              <input class="form-control" name="captain_experience" value="<%= boat.captain_experience || '' %>">
+            </div>
+          </div>
+
+          <h6 class="text-muted border-bottom pb-2">费用与包团</h6>
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label class="form-label">散客每座 ¥</label>
+              <input type="number" step="1" class="form-control" name="price_per_seat" value="<%= boat.price_per_seat || '' %>">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">包团最少人数</label>
+              <input type="number" class="form-control" name="charter_min_people" value="<%= boat.charter_min_people || '' %>">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">包团说明</label>
+              <input class="form-control" name="charter_note" value="<%= boat.charter_note || '' %>">
+            </div>
+            <div class="col-12">
+              <label class="form-label">费用包含</label>
+              <input class="form-control" name="price_includes" value="<%= boat.price_includes || '' %>">
+            </div>
+          </div>
+
+          <h6 class="text-muted border-bottom pb-2">船上设施</h6>
+          <div class="mb-3">
+            <label class="form-label">设施清单（逗号分隔）</label>
+            <input class="form-control" name="facilities" value="<%= boat.facilities || '' %>" placeholder="如 頂流機,洗手間,熱水,微波爐">
+          </div>
+
+          <h6 class="text-muted border-bottom pb-2">联系方式</h6>
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label class="form-label">联系电话</label>
+              <input class="form-control" name="contact_phone" value="<%= boat.contact_phone || '' %>">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">WhatsApp 报名链接</label>
+              <input class="form-control" name="whatsapp_link" value="<%= boat.whatsapp_link || '' %>" placeholder="https://wa.me/852xxxxxxxx">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">微信号</label>
+              <input class="form-control" name="wechat" value="<%= boat.wechat || '' %>" placeholder="如 Eco96441883">
+            </div>
+          </div>
+
+          <h6 class="text-muted border-bottom pb-2">综合介绍</h6>
+          <div class="mb-3">
+            <textarea class="form-control" name="description" rows="3"><%= boat.description || '' %></textarea>
+          </div>
+
+          <button class="btn btn-primary"><i class="bi bi-check-lg"></i> 保存修改</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右：图集 + 上船地点 -->
+  <div class="col-lg-5">
+    <!-- 图集 -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <h6 class="text-muted">船只实拍图集</h6>
+        <% if (images.length > 0) { %>
+          <div class="row g-2 mb-3">
+            <% images.forEach(img => { %>
+              <div class="col-6 col-md-4">
+                <div class="position-relative">
+                  <img src="/uploads/<%= img.filename %>" class="img-fluid rounded" style="height:90px;object-fit:cover;width:100%;">
+                  <% if (boat.cover_image === img.filename) { %>
+                    <span class="position-absolute top-0 start-0 badge bg-primary">封面</span>
+                  <% } %>
+                </div>
+                <div class="btn-group btn-group-sm mt-1 w-100">
+                  <form method="POST" action="/captain/boats/<%= boat.id %>/cover" class="w-50">
+                    <input type="hidden" name="image_id" value="<%= img.id %>">
+                    <button class="btn btn-outline-primary btn-sm w-100">封面</button>
+                  </form>
+                  <form method="POST" action="/captain/images/<%= img.id %>/del" class="w-50" onsubmit="return confirm('删除该图片？')">
+                    <button class="btn btn-outline-danger btn-sm w-100">删</button>
+                  </form>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+        <form method="POST" action="/captain/boats/<%= boat.id %>/images" enctype="multipart/form-data">
+          <label class="form-label small">上传图片（可多选，≤5MB）</label>
+          <input type="file" class="form-control form-control-sm" name="images" accept="image/*" multiple required>
+          <button class="btn btn-success btn-sm mt-2 w-100"><i class="bi bi-upload"></i> 上传</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 上船地点（支持多个，每个带出发时间和地图链接）-->
+    <div class="card">
+      <div class="card-body">
+        <h6 class="text-muted">上船地点（可设多个）</h6>
+        <% if (boardingPoints && boardingPoints.length > 0) { %>
+          <div class="list-group list-group-flush mb-3">
+            <% boardingPoints.forEach(bp => { %>
+              <div class="list-group-item px-0 d-flex justify-content-between align-items-start">
+                <div>
+                  <strong><%= bp.name %></strong>
+                  <% if (bp.depart_time) { %><div class="small text-muted"><i class="bi bi-clock"></i> <%= bp.depart_time %> 出发</div><% } %>
+                  <% if (bp.map_link) { %><a href="<%= bp.map_link %>" target="_blank" class="small">地图</a><% } %>
+                </div>
+                <form method="POST" action="/captain/boarding/<%= bp.id %>/del" onsubmit="return confirm('删除该上船地点？')">
+                  <button class="btn btn-outline-danger btn-sm">×</button>
+                </form>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+        <form method="POST" action="/captain/boats/<%= boat.id %>/boarding" class="row g-2">
+          <div class="col-12"><input class="form-control form-control-sm" name="name" placeholder="地点名（如 嘉亨灣）" required></div>
+          <div class="col-6"><input type="time" class="form-control form-control-sm" name="depart_time" placeholder="出发时间"></div>
+          <div class="col-6"><input type="number" class="form-control form-control-sm" name="sort_order" placeholder="排序" value="0"></div>
+          <div class="col-12"><input class="form-control form-control-sm" name="map_link" placeholder="地图链接（可选）"></div>
+          <div class="col-12"><button class="btn btn-outline-primary btn-sm w-100"><i class="bi bi-plus-lg"></i> 添加上船地点</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include('../partials/foot') %>

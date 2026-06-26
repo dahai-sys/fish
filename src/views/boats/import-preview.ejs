@@ -1,0 +1,230 @@
+<%- include('../partials/head', { title: '录入预览 · 鱼多多' }) %>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0"><i class="bi bi-ui-checks"></i> 解析结果预览</h3>
+  <a href="/captain/import" class="btn btn-outline-secondary btn-sm">重新粘贴</a>
+</div>
+
+<div class="alert alert-info small">
+  <i class="bi bi-info-circle"></i> 以下是系统从公告中自动识别的内容，<strong>请逐项核对/修改后再入库</strong>。识别不准的字段请手动修正。
+</div>
+
+<form method="POST" action="/captain/import/save">
+
+  <!-- 目标选择 -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <h6 class="text-muted">录入方式</h6>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="target_boat_id" id="newBoat" value="" checked onchange="toggleTarget()">
+        <label class="form-check-label" for="newBoat">新建船只（解析到的信息会创建一艘新船）</label>
+      </div>
+      <% if (boats && boats.length > 0) { %>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="target_boat_id" id="existBoat" value="<%= boats[0].id %>" onchange="toggleTarget()">
+        <label class="form-check-label" for="existBoat">追加到已有船（只录入船期和上船点，船只信息可选更新）</label>
+      </div>
+      <select class="form-select form-select-sm mt-2 d-none" id="existBoatSelect" name="_exist_select" style="max-width:300px">
+        <% boats.forEach(b => { %><option value="<%= b.id %>">#<%= String(b.id).padStart(3,'0') %> <%= b.name %></option><% }) %>
+      </select>
+      <% } %>
+    </div>
+  </div>
+
+  <div id="boatFields">
+  <!-- 船只基本信息（新建时填写）-->
+  <div class="card mb-3">
+    <div class="card-body">
+      <h6 class="text-muted">船只信息 <span class="small text-muted" id="boatFieldHint">（新建船只时填写）</span></h6>
+      <div class="row g-2">
+        <div class="col-md-4">
+          <label class="form-label small">船名</label>
+          <input class="form-control form-control-sm" name="boat_name" value="<%= parsed.boat.name || '' %>" placeholder="如 溢豐2號">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small">船只类型</label>
+          <select class="form-select form-select-sm" name="boat_type">
+            <% ['出海艇','近海艇','筏钓艇','休闲渔船','专业钓艇','其他'].forEach(t => { %>
+              <option value="<%= t %>" <%= parsed.boat.name && t==='出海艇' ? 'selected' : '' %>><%= t %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small">座位数</label>
+          <input type="number" class="form-control form-control-sm" name="seats" value="18">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small">长度(米)</label>
+          <input type="number" step="0.1" class="form-control form-control-sm" name="length_m" value="">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small">上船码头（主）</label>
+          <input class="form-control form-control-sm" name="meeting_port" value="">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small">主打鱼种</label>
+          <input class="form-control form-control-sm" name="target_fish" value="">
+        </div>
+        <div class="col-md-12">
+          <label class="form-label small">船长经验</label>
+          <input class="form-control form-control-sm" name="captain_experience" value="">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 费用与设施 -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <h6 class="text-muted">费用与设施</h6>
+      <div class="row g-2">
+        <div class="col-md-3">
+          <label class="form-label small">每座价格 ¥</label>
+          <input type="number" class="form-control form-control-sm" name="price_per_seat" value="<%= parsed.price_per_seat || '' %>">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small">包团最少人数</label>
+          <input type="number" class="form-control form-control-sm" name="charter_min_people" value="">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small">费用包含</label>
+          <input class="form-control form-control-sm" name="price_includes" value="<%= parsed.price_includes || '' %>">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small">包团说明</label>
+          <input class="form-control form-control-sm" name="charter_note" value="">
+        </div>
+        <div class="col-md-12">
+          <label class="form-label small">设施（逗号分隔）</label>
+          <input class="form-control form-control-sm" name="facilities" value="<%= parsed.facilities || '' %>">
+        </div>
+        <div class="col-md-12">
+          <label class="form-label small">船只描述</label>
+          <textarea class="form-control form-control-sm" name="description" rows="2"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 联系方式 -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <h6 class="text-muted">联系方式</h6>
+      <div class="row g-2">
+        <div class="col-md-4">
+          <label class="form-label small">电话</label>
+          <input class="form-control form-control-sm" name="contact_phone" value="<%= parsed.contacts.contact_phone || '' %>">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small">WhatsApp 链接</label>
+          <input class="form-control form-control-sm" name="whatsapp_link" value="<%= parsed.contacts.whatsapp_link || '' %>">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small">微信</label>
+          <input class="form-control form-control-sm" name="wechat" value="<%= parsed.contacts.wechat || '' %>">
+        </div>
+      </div>
+    </div>
+  </div>
+  </div><!-- /boatFields -->
+
+  <!-- 上船点 -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="text-muted mb-0">上船点（<span id="bpCount"><%= (parsed.boardingPoints||[]).length %></span>）</h6>
+        <button type="button" class="btn btn-outline-primary btn-sm" onclick="addBoarding()">+ 添加</button>
+      </div>
+      <div id="bpList">
+        <% (parsed.boardingPoints||[]).forEach((bp, i) => { %>
+        <div class="row g-2 mb-2 bp-row">
+          <div class="col-5"><input class="form-control form-control-sm" name="boarding_names" placeholder="地点名" value="<%= bp.name %>"></div>
+          <div class="col-4"><input class="form-control form-control-sm" name="boarding_times" placeholder="出发时间 如 12:00" value="<%= bp.depart_time || '' %>"></div>
+          <div class="col-3"><button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="this.closest('.bp-row').remove();updateCount()">删除</button></div>
+        </div>
+        <% }) %>
+        <% if (!parsed.boardingPoints || parsed.boardingPoints.length === 0) { %>
+        <div class="row g-2 mb-2 bp-row">
+          <div class="col-5"><input class="form-control form-control-sm" name="boarding_names" placeholder="地点名"></div>
+          <div class="col-4"><input class="form-control form-control-sm" name="boarding_times" placeholder="出发时间"></div>
+          <div class="col-3"><button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="this.closest('.bp-row').remove();updateCount()">删除</button></div>
+        </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- 船期 -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="text-muted mb-0">船期（<span id="tripCount"><%= (parsed.trips||[]).length %></span>）</h6>
+        <button type="button" class="btn btn-outline-primary btn-sm" onclick="addTrip()">+ 添加</button>
+      </div>
+      <% if (!parsed.trips || parsed.trips.length === 0) { %>
+        <div class="text-muted small">未识别到船期，可手动添加</div>
+      <% } %>
+      <div id="tripList">
+        <% (parsed.trips||[]).forEach((t, i) => { %>
+        <div class="row g-2 mb-2 trip-row">
+          <div class="col-md-3"><input type="date" class="form-control form-control-sm" name="trip_dates" value="<%= t.depart_date %>"></div>
+          <div class="col-md-2">
+            <select class="form-select form-select-sm" name="trip_statuses">
+              <option value="recruiting" <%= t.status==='recruiting'?'selected':'' %>>招募中</option>
+              <option value="confirmed" <%= t.status==='confirmed'?'selected':'' %>>已成团</option>
+              <option value="full" <%= t.status==='full'?'selected':'' %>>已满</option>
+              <option value="closed" <%= t.status==='closed'?'selected':'' %>>已关闭</option>
+            </select>
+          </div>
+          <div class="col-md-5"><input class="form-control form-control-sm" name="trip_notes" placeholder="备注（如 港水/通宵/擔杆）" value="<%= t.note %>"></div>
+          <div class="col-md-2"><button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="this.closest('.trip-row').remove();updateCount()">删除</button></div>
+        </div>
+        <% }) %>
+      </div>
+      <div class="form-text">出发/回岸时间如公告提及，可在入库后到船只编辑页单独设置每个船期的时间。</div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 mb-4">
+    <button type="submit" class="btn btn-success btn-lg"><i class="bi bi-check-lg"></i> 确认入库</button>
+    <a href="/captain/import" class="btn btn-outline-secondary btn-lg">取消</a>
+  </div>
+</form>
+
+<script>
+function toggleTarget(){
+  var isNew = document.getElementById('newBoat').checked;
+  document.getElementById('boatFields').style.display = isNew ? '' : 'none';
+  var sel = document.getElementById('existBoatSelect');
+  if (sel) sel.classList.toggle('d-none', isNew);
+}
+function updateCount(){
+  document.getElementById('bpCount').textContent = document.querySelectorAll('.bp-row').length;
+  document.getElementById('tripCount').textContent = document.querySelectorAll('.trip-row').length;
+}
+function addBoarding(){
+  var html = '<div class="row g-2 mb-2 bp-row">'+
+    '<div class="col-5"><input class="form-control form-control-sm" name="boarding_names" placeholder="地点名"></div>'+
+    '<div class="col-4"><input class="form-control form-control-sm" name="boarding_times" placeholder="出发时间"></div>'+
+    '<div class="col-3"><button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="this.closest(\'.bp-row\').remove();updateCount()">删除</button></div>'+
+    '</div>';
+  document.getElementById('bpList').insertAdjacentHTML('beforeend', html);
+  updateCount();
+}
+function addTrip(){
+  var html = '<div class="row g-2 mb-2 trip-row">'+
+    '<div class="col-md-3"><input type="date" class="form-control form-control-sm" name="trip_dates"></div>'+
+    '<div class="col-md-2"><select class="form-select form-select-sm" name="trip_statuses"><option value="recruiting">招募中</option><option value="confirmed">已成团</option><option value="full">已满</option></select></div>'+
+    '<div class="col-md-5"><input class="form-control form-control-sm" name="trip_notes" placeholder="备注"></div>'+
+    '<div class="col-md-2"><button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="this.closest(\'.trip-row\').remove();updateCount()">删除</button></div>'+
+    '</div>';
+  document.getElementById('tripList').insertAdjacentHTML('beforeend', html);
+  updateCount();
+}
+// 追加到已有船时，select 同步 target_boat_id
+document.addEventListener('change', function(e){
+  if (e.target && e.target.id === 'existBoatSelect') {
+    document.getElementById('existBoat').value = e.target.value;
+  }
+});
+</script>
+<%- include('../partials/foot') %>

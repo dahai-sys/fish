@@ -1,0 +1,62 @@
+<%- include('../partials/head', { title: '发布船期 · 鱼多多' }) %>
+<h3 class="mb-3"><i class="bi bi-plus-square"></i> 发布船期</h3>
+<div class="row">
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-body">
+        <form method="POST" action="/captain/trips/new">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">选择船只 *</label>
+              <select name="boat_id" class="form-select" required>
+                <option value="">请选择</option>
+                <% boats.forEach(b => { %>
+                  <option value="<%= b.id %>" <%= (values.boat_id==String(b.id)) ? 'selected' : '' %>>
+                    #<%= String(b.id).padStart(3,'0') %> <%= b.name %>（<%= b.boat_type %>，载客 <%= b.seats %> 座）
+                  </option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">出发日期 *</label>
+              <input type="date" class="form-control" name="depart_date" value="<%= values.depart_date || '' %>" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">上船时间</label>
+              <input type="time" class="form-control" name="depart_time" value="<%= values.depart_time || '' %>">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">回岸时间</label>
+              <input type="time" class="form-control" name="return_time" value="<%= values.return_time || '' %>">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">每座价格 ¥ *</label>
+              <input type="number" step="1" class="form-control" name="price_per_seat" value="<%= values.price_per_seat || '' %>" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">开放座位 *</label>
+              <input type="number" class="form-control" name="available_seats" value="<%= values.available_seats || '' %>" required>
+            </div>
+          </div>
+          <div class="mt-3">
+            <button class="btn btn-primary"><i class="bi bi-check-lg"></i> 发布</button>
+            <a href="/captain/trips" class="btn btn-outline-secondary">取消</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-body">
+        <h6 class="text-muted">说明</h6>
+        <ul class="small text-muted mb-0">
+          <li>船期只管「何时出船、多少座位、什么价格」</li>
+          <li>钓点、码头、鱼种等船只信息请在「船只编辑」里维护</li>
+          <li>开放座位不能超过船只载客数</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include('../partials/foot') %>

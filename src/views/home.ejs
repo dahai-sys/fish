@@ -1,0 +1,38 @@
+<%- include('partials/head', { title: '鱼多多 Fish Full' }) %>
+<div class="text-center py-4 mb-4">
+  <h2 class="fw-bold"><i class="bi bi-tsunami"></i> 鱼多多 <small class="text-muted fs-6">Fish Full</small></h2>
+  <p class="text-muted">船长发布船期 · 钓鱼人查询预约 · 一键对接海钓需求</p>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card h-100 text-center">
+      <div class="card-body p-4">
+        <div class="display-5">🎣</div>
+        <h4 class="mt-2">我是钓鱼人</h4>
+        <p class="text-muted">浏览船只、查看钓点海况与渔获，在线预约座位</p>
+        <a href="/boats" class="btn btn-primary">浏览船只</a>
+        <% if (!currentUser) { %><a href="/register" class="btn btn-outline-primary ms-2">注册</a><% } %>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card h-100 text-center">
+      <div class="card-body p-4">
+        <div class="display-5">🚢</div>
+        <h4 class="mt-2">我是船长</h4>
+        <p class="text-muted">录入船只信息，发布出海船期，管理钓鱼人预约</p>
+        <% if (currentUser && currentUser.role === 'captain') { %>
+          <a href="/captain/trips/new" class="btn btn-primary">发布船期</a>
+          <a href="/captain/boats" class="btn btn-outline-primary ms-2">我的船只</a>
+        <% } else if (currentUser) { %>
+          <a href="/logout" class="btn btn-outline-secondary">切换为船长账号</a>
+        <% } else { %>
+          <a href="/register" class="btn btn-primary">船长注册</a>
+          <a href="/login" class="btn btn-outline-primary ms-2">登录</a>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include('partials/foot') %>
